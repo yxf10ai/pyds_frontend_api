@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 
 
 st.set_page_config(page_title="Understanding Streamlit Security", layout="wide")
@@ -40,7 +41,8 @@ st.write(
 DEFAULT_AUTH_CONFIG = {
     "users": {
         "admin": {"password": "admin123", "role": "admin"},
-        "engineer": {"password": "engineer123", "role": "viewer"},
+        "engineer01": {"password": "engineer123", "role": "viewer"},
+        "engineer02": {"password": "engineer456", "role": "viewer"},
     }
 }
 
@@ -72,6 +74,15 @@ def login_user() -> None:
     username = st.session_state.login_username
     password = st.session_state.login_password
 
+    if st.session_state.authenticated:
+        if username == st.session_state.current_user:
+            st.session_state.login_error = "You are already logged in as this user. Please log out first if you want to re-authenticate."
+        else:
+            st.session_state.login_error = (
+                f"Already logged in as {st.session_state.current_user}. Please log out before logging in as another user."
+            )
+        return
+
     user_record = AUTH_CONFIG.get("users", {}).get(username)
 
     if user_record and user_record.get("password") == password:
@@ -83,15 +94,13 @@ def login_user() -> None:
         st.session_state.authenticated = False
         st.session_state.current_user = ""
         st.session_state.current_role = "guest"
-        st.session_state.login_error = "Wrong username or password."
+        st.session_state.login_error = "Wrong username or password!!!!!!."
 
 
 def logout_user() -> None:
     st.session_state.authenticated = False
     st.session_state.current_user = ""
     st.session_state.current_role = "guest"
-    st.session_state.login_username = ""
-    st.session_state.login_password = ""
     st.session_state.login_error = ""
 
 
@@ -109,14 +118,20 @@ login_col, info_col = st.columns(2)
 
 with login_col:
     st.subheader("Login form")
-    with st.form("login_form"):
-        st.text_input("Username", key="login_username")
-        st.text_input("Password", type="password", key="login_password")
 
-        login_clicked = st.form_submit_button("Log in")
+    if st.session_state.authenticated:
+        st.info(
+            f"You are currently logged in as {st.session_state.current_user}. Log out before trying another account."
+        )
+    else:
+        with st.form("login_form"):
+            st.text_input("Username", key="login_username")
+            st.text_input("Password", type="password", key="login_password")
 
-    if login_clicked:
-        login_user()
+            login_clicked = st.form_submit_button("Log in")
+
+        if login_clicked:
+            login_user()
 
     if st.session_state.login_error:
         st.error(st.session_state.login_error)
@@ -151,10 +166,13 @@ if st.session_state.authenticated:
         if st.session_state.current_role == "admin":
             st.warning("Admin-only controls would appear here.")
         else:
+            time.sleep(10)
             st.info("Viewer accounts can see the dashboard, but not admin controls.")
 
-    if st.button("Log out", key="logout_button"):
+    if st.button("!!Log OUT!!", key="logout_button"):
         logout_user()
+        st.session_state.login_username = ""
+        st.session_state.login_password = ""
         st.rerun()
 else:
     st.info("You are not logged in yet. The protected area is hidden until authentication succeeds.")

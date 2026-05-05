@@ -60,7 +60,7 @@ st.write(
 @st.cache_data
 def build_report_rows(report_name: str) -> pd.DataFrame:
     """Simulate an expensive data-building task."""
-    time.sleep(2)
+    time.sleep(5)
     return pd.DataFrame(
         {
             "metric": ["rows", "columns", "status"],
@@ -103,7 +103,7 @@ st.write(
 @st.cache_resource
 def create_fake_client() -> dict:
     """Simulate creating a reusable client object."""
-    time.sleep(1)
+    time.sleep(10)
     return {"client_name": "demo-client", "created_for": "reused across reruns"}
 
 
